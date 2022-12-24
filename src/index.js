@@ -1,10 +1,3 @@
-// convert jsx to elements
-
-// convert elements to fibers
-
-// commit fibers to the screen
-
-
 // Create the element objects from jsx that will be eventually turned into fibers
 function createElement(type, props, ...children) {
   return {
@@ -249,13 +242,13 @@ function useState(initial) {
   const setState = action => {
     // push the action function on the queu
     hook.queue.push(action);
-    // update the current wipRoot to this node (wip is in sync with this functional component because
-    // this is called when we call the function to generate the children)
+    // set the current wipRoot to the current root 
     wipRoot = {
       dom: currentRoot.dom,
       props: currentRoot.props,
       alternate: currentRoot
     };
+    console.log('wipRoot', wipRoot)
     // tell our framework to process this and any node under it when set state is called
     nextUnitOfWork = wipRoot;
     deletions = [];
@@ -297,6 +290,7 @@ function reconcileChildren(wipFiber, elements) {
         alternate: oldFiber,
         effectTag: "UPDATE"
       };
+      console.log("UPDATE", newFiber);
     }
 
     // if the element has a different type as the old child, we need to create a placement fiber
@@ -309,12 +303,14 @@ function reconcileChildren(wipFiber, elements) {
         alternate: null,
         effectTag: "PLACEMENT"
       };
+      console.log("PLACEMENT", newFiber);
     }
 
     // if an old fiber exists and its not te same type, we need to create a delete fiber
     if (oldFiber && !sameType) {
       oldFiber.effectTag = "DELETION";
       deletions.push(oldFiber);
+      console.log("DELETE", oldFiber);
     }
 
     // move the old fiber pointer to the next sibling so we can compare those
@@ -346,16 +342,33 @@ function Counter() {
   const [state, setState] = Didact.useState(1);
   const [state2, setState2] = Didact.useState(1);
   return (
-    <div>
+    <div id="level 2">
       <h1 onClick={() => setState(c => c + 1)} style="user-select: none">
         Count: {state}
       </h1>
-      <h1 onClick={() => setState2(c => c + 1)} style="user-select: none">
-      Count: {state2}
-      </h1>
+      {state % 2 === 0 ? (<b>Even</b>) : null}
     </div>
   );
 }
-const element = <Counter />;
+
+function CouterWrapperOne () {
+
+  return (
+  <div id='CouterWrapperOne'>
+    <b>CouterWrapperOne</b>
+    <CouterWrapperTwo></CouterWrapperTwo>
+  </div>)
+};
+
+function CouterWrapperTwo () {
+
+  return (
+  <div id='CouterWrapperTwo'>
+    <b>CouterWrapperTwo</b>
+    <Counter></Counter>
+  </div>)
+};
+
+const element = <CouterWrapperOne />;
 const container = document.getElementById("root");
 Didact.render(element, container);
